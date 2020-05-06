@@ -2,9 +2,10 @@ from flask import Flask
 from flask_restful import Api
 from flask_jwt_extended import JWTManager
 
-from resources.user import UserRegister, User, UserLogin, TokenRefresh, UserLogout
-
 from blacklist import BLACKLIST
+from ma import ma
+
+from resources.user import UserRegister, User, UserLogin, TokenRefresh, UserLogout
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.db'
@@ -40,4 +41,5 @@ api.add_resource(TokenRefresh, '/refresh')
 if __name__ == '__main__':
     from db import db
     db.init_app(app)
+    ma.init_app(app)
     app.run(port=5000, debug=True)
