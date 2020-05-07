@@ -5,7 +5,9 @@ from schemas.item import ItemSchema
 
 
 class StoreSchema(ma.SQLAlchemyAutoSchema):
-    items = ma.Nasted(ItemSchema, many = True)
+    items = ma.Nested(ItemSchema, many=True)
+
+
     class Meta:
         model = StoreModel
         dump_only = ("id",)

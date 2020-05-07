@@ -15,6 +15,8 @@ USER_NOT_FOUND = 'User not found'
 USER_DELETED = 'User deleted'
 INVALID_CREDENTIALS = "Invalid Credentials!"
 USER_LOGGED_OUT = 'User <id={user_id}> successfully logged out'
+NOT_CONFIRMED_ERROR = "You have not confirmed registration, please check your email <{}>"
+USER_CONFIRMED = "User confirmed"
 
 user_schema = UserSchema()
 
@@ -53,18 +55,16 @@ class UserLogin(Resource):
     @classmethod
     def post(cls):
         user_json = request.get_json()
-        user_data = user_schema.load(request.user_json)
+        user_data = user_schema.load(user_json)
 
         user = UserModel.find_by_username(user_data.username)
 
         if user and safe_str_cmp(user.password, user_data.password):
-            access_token = create_access_token(identity=user.id, fresh=True)
-            refresh_token = create_refresh_token(user.id)
-            return {
-                'access_token': access_token,
-                'refresh_token': refresh_token
-            }, 200
-
+            if user.activated:
+                access_token = create_access_token(identity=user.id, fresh=True)
+                refresh_token = create_refresh_token(user.id)
+                return {'access_token': access_token, 'refresh_token': refresh_token}, 200
+            return {"message": NOT_CONFIRMED_ERROR.format(user.username)}, 400
         return {"message": INVALID_CREDENTIALS}, 401
 
 
@@ -78,7 +78,6 @@ class UserLogout(Resource):
         return {"message": USER_LOGGED_OUT.format(user_id=user_id)}, 200
 
 
-
 class TokenRefresh(Resource):
     @classmethod
     @jwt_refresh_token_required
@@ -86,3 +85,14 @@ class TokenRefresh(Resource):
         current_user = get_jwt_identity()
         new_token = create_access_token(identity=current_user, fresh=False)
         return {'access_token': new_token}, 200
+
+
+class UserConfirm(Resource):
+    @classmethod
+    def get(cls, user_id):
+        user = UserModel.find_by_id(user_id)
+        if not user:
+            return {'message': USER_NOT_FOUND}, 404
+        user.activated = True
+        user.save_to_db()
+        return {"message": USER_CONFIRMED}, 200

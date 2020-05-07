@@ -6,7 +6,7 @@ from marshmallow import ValidationError
 from blacklist import BLACKLIST
 from ma import ma
 
-from resources.user import UserRegister, User, UserLogin, TokenRefresh, UserLogout
+from resources.user import UserRegister, User, UserLogin, TokenRefresh, UserLogout, UserConfirm
 from resources.item import Item, ItemList
 from resources.store import Store, StoreList
 
@@ -27,6 +27,7 @@ api = Api(app)
 def create_tables():
     db.create_all()
 
+
 @app.errorhandler(ValidationError)
 def handle_marshmallow_validation(err):
     return jsonify(err.messages), 400
@@ -41,6 +42,7 @@ def check_if_token_in_blacklist(decrypted_token):
 
 
 api.add_resource(UserRegister, '/register')
+api.add_resource(UserConfirm, '/user_confirm/<int:user_id>')
 api.add_resource(User, '/user/<int:user_id>')
 api.add_resource(UserLogin, '/login')
 api.add_resource(UserLogout, '/logout')
