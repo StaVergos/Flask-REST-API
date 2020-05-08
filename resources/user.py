@@ -2,6 +2,7 @@ from flask import request
 from flask_restful import Resource
 from werkzeug.security import safe_str_cmp
 from flask_jwt_extended import create_access_token, create_refresh_token, jwt_refresh_token_required, get_jwt_identity, jwt_required, get_raw_jwt
+import traceback
 
 from marshmallow import ValidationError
 from schemas.user import UserSchema
@@ -10,13 +11,15 @@ from blacklist import BLACKLIST
 
 BLANK_ERROR = "'{}' cannot be left blank."
 USER_ALREADY_EXISTS = "A user with that username already exists"
-CREATED_SUCCESFULLY = "User created successfully."
+SUCCESS_REGISTER = "Account created successfully, check your emails"
 USER_NOT_FOUND = 'User not found'
 USER_DELETED = 'User deleted'
 INVALID_CREDENTIALS = "Invalid Credentials!"
 USER_LOGGED_OUT = 'User <id={user_id}> successfully logged out'
 NOT_CONFIRMED_ERROR = "You have not confirmed registration, please check your email <{}>"
 USER_CONFIRMED = "User confirmed"
+EMAIL_ALREADY_EXISTS = "A user with that email already exists"
+FAILED_TO_CREATE = "Internal server error. Failed to create user"
 
 user_schema = UserSchema()
 
@@ -29,9 +32,16 @@ class UserRegister(Resource):
         if UserModel.find_by_username(user.username):
             return {"message": USER_ALREADY_EXISTS}, 400
 
-        user.save_to_db()
+        if UserModel.find_by_email(user.email):
+            return {"message": EMAIL_ALREADY_EXISTS}, 400
 
-        return {"message": CREATED_SUCCESFULLY}, 201
+        try:
+            user.save_to_db()
+            user.send_confirmation_email()
+            return {"message": SUCCESS_REGISTER}, 201
+        except:
+            traceback.print_exc()
+            return {"message": FAILED_TO_CREATE}, 500
 
 
 class User(Resource):
@@ -55,7 +65,7 @@ class UserLogin(Resource):
     @classmethod
     def post(cls):
         user_json = request.get_json()
-        user_data = user_schema.load(user_json)
+        user_data = user_schema.load(user_json, partial=("email",))
 
         user = UserModel.find_by_username(user_data.username)
 
