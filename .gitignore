@@ -4,3 +4,4 @@ data.db
 .idea
 pipfile
 Pipfile.lock
+.env

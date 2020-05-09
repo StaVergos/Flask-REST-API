@@ -1,13 +1,11 @@
 from flask import request, url_for
-from requests import Response, post
+from requests import Response
 from typing import Dict, Union
 
 from db import db
 
-MAILGUN_DOMAIN = "your_domain"
-MAILGUN_API_KEY = "your_api_key"
-FROM_TITLE = "BBK"
-FROM_EMAIL = "your_mailgun_email"
+from libs.mailgun import Mailgun
+
 
 UserJSON = Dict[str, Union[int, str]]
 
@@ -41,17 +39,10 @@ class UserModel(db.Model):
     def find_by_email(cls, email: str) -> "UserModel":
         return cls.query.filter_by(email=email).first()
 
-
-def send_confirmation(self) -> Response:
+    def send_confirmation_email(self) -> Response:
         link = request.url_root[:-1] + url_for("userconfirm", user_id=self.id)
+        subject = "Registration confirmation",
+        text = f"Please click the link to confirm your registration: {link}"
+        html = f'<html>Please click the link to confirm your registration: <a href="{link}">{link}</a>"</html>'
 
-        return post(
-            f"http://api.mailgun.net/v3/{MAILGUN_DOMAIN}/messages",
-            auth=("api", MAILGUN_API_KEY),
-            data={
-                "from": f"{FROM_TITLE} <{FROM_EMAIL}>",
-                "to": self.email,
-                "subject": "Registration confirmation",
-                "text": f"Please click the link to confirm your registration: {link}",
-            },
-        )
+        return Mailgun.send_email([self.email], subject, text, html)

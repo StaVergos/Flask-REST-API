@@ -8,3 +8,4 @@ marshmallow
 Flask-marshmallow
 marshmallow-sqlalchemy
 requests
+python-dotenv

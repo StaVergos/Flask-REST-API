@@ -4,7 +4,7 @@ from werkzeug.security import safe_str_cmp
 from flask_jwt_extended import create_access_token, create_refresh_token, jwt_refresh_token_required, get_jwt_identity, jwt_required, get_raw_jwt
 import traceback
 
-from marshmallow import ValidationError
+from libs.mailgun import MailGunException
 from schemas.user import UserSchema
 from models.user import UserModel
 from blacklist import BLACKLIST
@@ -39,6 +39,9 @@ class UserRegister(Resource):
             user.save_to_db()
             user.send_confirmation_email()
             return {"message": SUCCESS_REGISTER}, 201
+        except MailGunException as e:
+            user.delete_from_db()
+            return {"message": str(e)}, 505
         except:
             traceback.print_exc()
             return {"message": FAILED_TO_CREATE}, 500
