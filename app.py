@@ -1,3 +1,5 @@
+import os
+
 from flask import Flask, jsonify
 from flask_restful import Api
 from flask_jwt_extended import JWTManager
@@ -6,7 +8,6 @@ from marshmallow import ValidationError
 from blacklist import BLACKLIST
 from ma import ma
 
-import os
 
 from resources.user import UserRegister, UserLogin, User, TokenRefresh, UserLogout
 from resources.item import Item, ItemList
@@ -44,17 +45,17 @@ def check_if_token_in_blacklist(decrypted_token):
     return decrypted_token['jti'] in BLACKLIST
 
 
-api.add_resource(UserRegister, '/register')
-api.add_resource(User, '/user/<int:user_id>')
-api.add_resource(UserLogin, '/login')
-api.add_resource(UserLogout, '/logout')
-api.add_resource(Item, '/item/<string:name>')
-api.add_resource(ItemList, '/items')
-api.add_resource(Store, '/store/<string:name>')
-api.add_resource(StoreList, '/stores')
-api.add_resource(TokenRefresh, '/refresh')
-api.add_resource(Confirmation, '/user_confirmation/<string:confirmation_id>')
-api.add_resource(ConfirmationByUser, '/confirmation/user/<int:user_id>')
+api.add_resource(Store, "/store/<string:name>")
+api.add_resource(StoreList, "/stores")
+api.add_resource(Item, "/item/<string:name>")
+api.add_resource(ItemList, "/items")
+api.add_resource(UserRegister, "/register")
+api.add_resource(User, "/user/<int:user_id>")
+api.add_resource(UserLogin, "/login")
+api.add_resource(TokenRefresh, "/refresh")
+api.add_resource(UserLogout, "/logout")
+api.add_resource(Confirmation, "/user_confirm/<string:confirmation_id>")
+api.add_resource(ConfirmationByUser, "/confirmation/user/<int:user_id>")
 
 if __name__ == '__main__':
     from db import db

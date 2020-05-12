@@ -1,5 +1,5 @@
-from uuid import uuid4
 from time import time
+from uuid import uuid4
 
 from db import db
 
@@ -12,7 +12,7 @@ class ConfirmationModel(db.Model):
     id = db.Column(db.String(50), primary_key=True)
     expire_at = db.Column(db.Integer, nullable=False)
     confirmed = db.Column(db.Boolean, nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     user = db.relationship("UserModel")
 
     def __init__(self, user_id: int, **kwargs):
@@ -28,13 +28,17 @@ class ConfirmationModel(db.Model):
 
     @property
     def expired(self) -> bool:
-        return time() > self.expire_at  # current time > time created + confirmation delta
+        return time() > self.expire_at
 
-    def force_to_expire(self) -> None:
-        if not self.expired():
+    def force_to_expire(self) -> None:  # forcing current confirmation to expire
+        if not self.expired:
             self.expire_at = int(time())
             self.save_to_db()
 
     def save_to_db(self) -> None:
+        db.session.add(self)
+        db.session.commit()
+
+    def delete_from_db(self) -> None:
         db.session.delete(self)
         db.session.commit()

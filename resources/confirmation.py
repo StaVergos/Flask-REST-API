@@ -76,7 +76,7 @@ class ConfirmationByUser(Resource):
 
         try:
             # find the most current confirmation for the user
-            confirmation = user.most_recent_confirmation
+            confirmation = user.most_recent_confirmation  # using property decorator
             if confirmation:
                 if confirmation.confirmed:
                     return {"message": ALREADY_CONFIRMED}, 400
@@ -84,6 +84,8 @@ class ConfirmationByUser(Resource):
 
             new_confirmation = ConfirmationModel(user_id)  # create a new confirmation
             new_confirmation.save_to_db()
+            # Does `user` object know the new confirmation by now? Yes.
+            # An excellent example where lazy='dynamic' comes into use.
             user.send_confirmation_email()  # re-send the confirmation email
             return {"message": RESEND_SUCCESSFUL}, 201
         except MailGunException as e:
