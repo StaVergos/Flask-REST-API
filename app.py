@@ -8,9 +8,10 @@ from ma import ma
 
 import os
 
-from resources.user import UserRegister, User, UserLogin, TokenRefresh, UserLogout, UserConfirm
+from resources.user import UserRegister, UserLogin, User, TokenRefresh, UserLogout
 from resources.item import Item, ItemList
 from resources.store import Store, StoreList
+from resources.confirmation import Confirmation, ConfirmationByUser
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URI")
@@ -44,7 +45,6 @@ def check_if_token_in_blacklist(decrypted_token):
 
 
 api.add_resource(UserRegister, '/register')
-api.add_resource(UserConfirm, '/user_confirm/<int:user_id>')
 api.add_resource(User, '/user/<int:user_id>')
 api.add_resource(UserLogin, '/login')
 api.add_resource(UserLogout, '/logout')
@@ -53,6 +53,8 @@ api.add_resource(ItemList, '/items')
 api.add_resource(Store, '/store/<string:name>')
 api.add_resource(StoreList, '/stores')
 api.add_resource(TokenRefresh, '/refresh')
+api.add_resource(Confirmation, '/user_confirmation/<string:confirmation_id>')
+api.add_resource(ConfirmationByUser, '/confirmation/user/<int:user_id>')
 
 if __name__ == '__main__':
     from db import db
