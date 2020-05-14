@@ -5,3 +5,4 @@ data.db
 pipfile
 Pipfile.lock
 .env
+default_config.py
