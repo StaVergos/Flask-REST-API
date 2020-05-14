@@ -79,8 +79,7 @@ class ConfirmationByUser(Resource):
 
             new_confirmation = ConfirmationModel(user_id)  # create a new confirmation
             new_confirmation.save_to_db()
-            # Does `user` object know the new confirmation by now? Yes.
-            # An excellent example where lazy='dynamic' comes into use.
+
             user.send_confirmation_email()  # re-send the confirmation email
             return {"message": gettext("confirmation_resend_successful")}, 201
         except MailGunException as e:

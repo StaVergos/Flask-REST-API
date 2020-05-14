@@ -18,7 +18,7 @@ def refresh():
         cached_strings = json.load(f)
 
 
-def gettext():
+def gettext(name):
     return cached_strings[name]
 
 
