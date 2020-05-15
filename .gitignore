@@ -6,3 +6,4 @@ pipfile
 Pipfile.lock
 .env
 default_config.py
+static/images
