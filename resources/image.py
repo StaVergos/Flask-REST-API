@@ -30,8 +30,9 @@ class ImageUpload(Resource):
 
 
 class Image(Resource):
+    @classmethod
     @jwt_required
-    def get(self, filename: str):
+    def get(cls, filename: str):
         user_id = get_jwt_identity()
         folder = f"user_{user_id}"
         if not image_helper.is_filename_safe(filename):
@@ -41,8 +42,9 @@ class Image(Resource):
         except FileNotFoundError:
             return {"message": gettext("image_not_found").format(filename)}, 404
 
+    @classmethod
     @jwt_required
-    def delete(self, filename: str):
+    def delete(cls, filename: str):
         user_id = get_jwt_identity()
         folder = f"user_{user_id}"
 
@@ -59,8 +61,9 @@ class Image(Resource):
 
 
 class AvatarUpload(Resource):
+    @classmethod
     @jwt_required
-    def put(self):
+    def put(cls):
         data = image_schema.load(request.files)
         filename = f"user_{get_jwt_identity()}"
         folder = "avatars"
@@ -81,3 +84,14 @@ class AvatarUpload(Resource):
         except UploadNotAllowed:
             extension = image_helper.get_extension(data["image"])
             return {"message": gettext("image_wrong_extension").format(extension)}, 400
+
+
+class Avatar(Resource):
+    @classmethod
+    def get(cls, user_id: int):
+        folder = "avatars"
+        filename = f"user_{user_id}"
+        avatar = image_helper.find_image_any_format(filename, folder)
+        if avatar:
+            return send_file(avatar)
+        return {"message": gettext("avatar_not_found")}, 404
